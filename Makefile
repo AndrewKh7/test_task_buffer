@@ -20,7 +20,7 @@ INC = \
 #Compiler
 CXX = g++
 CXXFLAGS = $(INC) -Wall 
-OBJ = $(notdir $(patsubst %.cpp,%.o,$(wildcard $(SRC))))
+OBJ = $(addprefix $(BUILD)/,$(notdir $(patsubst %.cpp,%.o,$(wildcard $(SRC)))))
 
 VPATH = $(SRC_DIR)
 
@@ -28,10 +28,11 @@ VPATH = $(SRC_DIR)
 all: $(BUILD) $(BUILD)/$(TARGET)
 	@echo Success
 
-$(BUILD)/$(TARGET): $(BUILD)/$(OBJ)
+$(BUILD)/$(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 $(BUILD)/%.o: %.cpp
+	@echo $@
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD):
