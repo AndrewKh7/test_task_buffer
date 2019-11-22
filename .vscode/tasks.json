@@ -3,12 +3,12 @@
         {
             "label": "build debug",
             "type": "shell",
-            "command": "make DEBUG = 1",
+            "command": "make DEBUG=1",
         },
         {
             "label": "build",
             "type": "shell",
-            "command": "make DEBUG = 0",
+            "command": "make DEBUG=0",
         }
     ]
 }

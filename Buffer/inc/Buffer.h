@@ -5,7 +5,7 @@ class Buffer{
 public:
     Buffer(uint32_t length);
     ~Buffer();
-    uint32_t addBytes(const uint8_t *data, uint32_t len);
+    uint32_t addBytes(uint8_t const *data, uint32_t len);
     uint32_t readBytes(uint8_t *data, uint32_t len);
     uint32_t getQuantityEmptyBytes();
     uint32_t getQuantityBusyBytes();
@@ -18,6 +18,7 @@ private:
     uint32_t busyBytes;
     uint32_t end;
 
-    Buffer operator=(Buffer &other);
-    Buffer operator*(Buffer &other);
+    Buffer(Buffer const &);
+    Buffer operator=(Buffer const &);
+    Buffer operator*(Buffer const &);
 };
