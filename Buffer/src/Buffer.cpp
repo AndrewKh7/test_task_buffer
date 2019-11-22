@@ -1,6 +1,5 @@
 #include <buffer.h>
 
-
 Buffer::Buffer(uint32_t length){
     this->length = length;
     this->buf = new uint8_t[length];
@@ -14,7 +13,7 @@ Buffer::~Buffer(){
 }
 
 uint32_t Buffer::addBytes(uint8_t const *data, uint32_t len){
-
+    this->mtx.lock();
     if(this->getQuantityEmptyBytes() < len)
         len = this->getQuantityEmptyBytes();
     this->busyBytes += len;
@@ -23,11 +22,12 @@ uint32_t Buffer::addBytes(uint8_t const *data, uint32_t len){
         this->buf[this->end] = data[i];
         this->end = this->end == (this->length - 1) ? 0 : this->end + 1;
     }
-
+    this->mtx.unlock();
     return len;
 }
 
 uint32_t Buffer::readBytes(uint8_t *data, uint32_t len){
+    this->mtx.lock();
     if(this->getQuantityBusyBytes() < len)
         len = this->getQuantityBusyBytes();
     this->busyBytes -= len;
@@ -36,6 +36,7 @@ uint32_t Buffer::readBytes(uint8_t *data, uint32_t len){
         data[i] = this->buf[this->start];
         this->start = this->start == (this->length - 1) ? 0 : this->start + 1;
     }
+    this->mtx.unlock();
     return len;
 }
 

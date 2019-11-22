@@ -21,7 +21,7 @@ INC = \
 -Itest/inc
 
 #Compiler
-CXX = C:/mingw-w64/i686-6.3.0-posix-dwarf-rt_v5-rev2/mingw32/bin/g++.exe
+CXX = g++.exe
 CXXFLAGS = $(INC) -Wall  -Wfatal-errors
 OBJ = $(addprefix $(BUILD)/,$(notdir $(patsubst %.cpp,%.o,$(wildcard $(SRC)))))
 

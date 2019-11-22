@@ -1,5 +1,7 @@
 #pragma once
-#include <iostream>
+#include <stdint.h>
+#include <mutex>
+#include <thread>
 
 class Buffer{
 public:
@@ -17,7 +19,8 @@ private:
     uint32_t start;
     uint32_t busyBytes;
     uint32_t end;
-
+    std::mutex mtx;
+    
     Buffer(Buffer const &);
     Buffer operator=(Buffer const &);
     Buffer operator*(Buffer const &);
