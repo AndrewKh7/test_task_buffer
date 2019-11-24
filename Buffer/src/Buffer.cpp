@@ -12,7 +12,7 @@ Buffer::~Buffer(){
     delete[] this->buf;
 }
 
-uint32_t Buffer::addBytes(uint8_t const *data, uint32_t len){
+uint32_t Buffer::writeBytes(uint8_t const *data, uint32_t len){
     this->mtx.lock();
     if(this->getQuantityEmptyBytes() < len)
         len = this->getQuantityEmptyBytes();

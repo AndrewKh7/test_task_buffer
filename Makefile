@@ -21,7 +21,7 @@ INC = \
 -Itest/inc
 
 #Compiler
-CXX = g++.exe
+CXX = g++
 CXXFLAGS = $(INC) -Wall  -Wfatal-errors
 OBJ = $(addprefix $(BUILD)/,$(notdir $(patsubst %.cpp,%.o,$(wildcard $(SRC)))))
 

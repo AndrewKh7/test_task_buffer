@@ -1,8 +1,8 @@
 #include <test.h>
 #include <thread>
-#include <string>
 
-Msg Compare(const int *A, const int *B, uint32_t len){
+template<typename T>
+Msg Compare(const T *A, const T *B, uint32_t len){
     Msg res = OK;
     for(uint32_t i = 0; i < len; i++){
         if(A[i] != B[i]){
@@ -19,7 +19,7 @@ Msg test1(){
     Buffer myBuffer(32);
     int A[8] = {1,2,3,4,5,6,7,8}; // int = 4 bytes => 8*4 = 32 bytes
     int B[8]; 
-    unsigned int ren1 = myBuffer.addBytes((uint8_t *)A, sizeof(A));
+    unsigned int ren1 = myBuffer.writeBytes((uint8_t *)A, sizeof(A));
     unsigned int ren2 = myBuffer.readBytes((uint8_t *)B, sizeof(B));
     if((ren1 == sizeof(A) ) && (ren2 == sizeof(B)) && Compare(A,B,8))
         return OK;
@@ -32,7 +32,7 @@ Msg test2(){
     Buffer myBuffer(16);
     int A[8] = {1,2,3,4,5,6,7,8}; // int = 4 bytes => 8*4 = 32 bytes
     int B[8]; 
-    unsigned int ren1 = myBuffer.addBytes((uint8_t *)A, sizeof(A));
+    unsigned int ren1 = myBuffer.writeBytes((uint8_t *)A, sizeof(A));
     unsigned int ren2 = myBuffer.readBytes((uint8_t *)B, sizeof(B));
     if((ren1 == 16 ) && (ren2 == 16) && Compare(A,B ,4))
         return OK;
@@ -44,8 +44,8 @@ Msg test2(){
 Msg test3(){
     Buffer myBuffer(16);
     int A[8] = {1,2,3,4,5,6,7,8}; // int = 4 bytes => 8*4 = 32 bytes
-    myBuffer.addBytes((uint8_t *)A, sizeof(A));
-    unsigned int ren1 = myBuffer.addBytes((uint8_t *)A, sizeof(A));
+    myBuffer.writeBytes((uint8_t *)A, sizeof(A));
+    unsigned int ren1 = myBuffer.writeBytes((uint8_t *)A, sizeof(A));
 
     if(ren1 == 0 )
         return OK;
@@ -69,9 +69,9 @@ Msg test5(){
     int A[8] = {1,2,3,4,5,6,7,8}; // int = 4 bytes => 8*4 = 32 bytes
     int B[8]; 
     int B_[5] = {3,4,1,2,5}; 
-    unsigned int ren1 = myBuffer.addBytes((uint8_t *)A, sizeof(A[0])*7);
+    unsigned int ren1 = myBuffer.writeBytes((uint8_t *)A, sizeof(A[0])*7);
     unsigned int ren2 = myBuffer.readBytes((uint8_t *)B, sizeof(B[0])*5);
-    unsigned int ren3 = myBuffer.addBytes((uint8_t *)A, sizeof(A[0])*4);
+    unsigned int ren3 = myBuffer.writeBytes((uint8_t *)A, sizeof(A[0])*4);
     unsigned int ren4 = myBuffer.readBytes((uint8_t *)B, sizeof(B[0])*4);
     unsigned int ren5 = myBuffer.readBytes((uint8_t *)B, sizeof(B[0])*4);
 
@@ -94,11 +94,11 @@ Msg test6(){
     Buffer myBuffer(len); 
     int A[8] = {1,2,3,4,5,6,7,8};
 
-    myBuffer.addBytes((uint8_t *)A, sizeof(A[0])*2);
+    myBuffer.writeBytes((uint8_t *)A, sizeof(A[0])*2);
     unsigned int ren1 = myBuffer.getQuantityEmptyBytes();
-    myBuffer.addBytes((uint8_t *)A, sizeof(A[0])*4);
+    myBuffer.writeBytes((uint8_t *)A, sizeof(A[0])*4);
     unsigned int ren2 = myBuffer.getQuantityEmptyBytes();
-    myBuffer.addBytes((uint8_t *)A, sizeof(A[0])*8);
+    myBuffer.writeBytes((uint8_t *)A, sizeof(A[0])*8);
     unsigned int ren3 = myBuffer.getQuantityEmptyBytes();
     if( (ren1 == len - sizeof(A[0])*2) && \
         (ren2 == len - sizeof(A[0])*6) && \
@@ -125,37 +125,29 @@ Msg test7(){
 /* Tets with myltithreading*/
 
 Msg test8(){
-    std::string str1 = "The class thread represents a single thread of execution. Threads allow multiple functions to execute concurrently. \
-Threads begin execution immediately upon construction of the associated thread object (pending any OS scheduling delays), starting at the top-level function provided as a constructor argument. The return value of the top-level function is ignored and if it terminates by throwing an exception, std::terminate is called. The top-level function may communicate its return value or an exception to the caller via std::promise or by modifying shared variables (which may require synchronization, see std::mutex and std::atomic) \
-std::thread objects may also be in the state that does not represent any thread (after default construction, move from, detach, or join), and a thread of execution may be not associated with any thread objects (after detach).\
-No two std::thread objects may represent the same thread of execution; std::thread is not CopyConstructible or CopyAssignable, although it is MoveConstructible and MoveAssignable.";
-    std::string str2 = "The mutex class is a synchronization primitive that can be used to protect shared data from being simultaneously accessed by multiple threads.\
-mutex offers exclusive, non-recursive ownership semantics:\
-A calling thread owns a mutex from the time that it successfully calls either lock or try_lock until it calls unlock.\
-When a thread owns a mutex, all other threads will block (for calls to lock) or receive a false return value (for try_lock) if they attempt to claim ownership of the mutex.\
-A calling thread must not own the mutex prior to calling lock or try_lock.\
-The behavior of a program is undefined if a mutex is destroyed while still owned by any threads, or a thread terminates while owning a mutex. The mutex class satisfies all requirements of Mutex and StandardLayoutType.\
-std::mutex is neither copyable nor movable.";
-    Buffer myBuffer(sizeof(str1)+sizeof(str2));
     bool start_flag = 0;
+    char str1[] = {'H','e','l','l','o'};
+    char str2[] = {'w','o','r','l','d'};
+
+    Buffer myBuffer(sizeof(str1)+sizeof(str2));
 
     std::thread t1([&myBuffer,&str1, &start_flag](){
-        while(start_flag==0);
-        myBuffer.addBytes((uint8_t *)&str1, sizeof(str1));       
+        while(start_flag==0);  //thread synchronization
+        myBuffer.writeBytes((uint8_t *)&str1, sizeof(str1));       
     });
     std::thread t2([&myBuffer,&str2,&start_flag](){
-        start_flag = 1;
-        myBuffer.addBytes((uint8_t *)&str2, sizeof(str2));       
+        start_flag = 1;   //thread synchronization
+        myBuffer.writeBytes((uint8_t *)&str2, sizeof(str2));       
     });
 
     t1.join();
     t2.join();
 
-    std::string str1_;
-    std::string str2_;
+    char str1_[5];
+    char str2_[5];
+    myBuffer.readBytes((uint8_t *)&str2_, sizeof(str2)); //t2 writes data earlier than t1
     myBuffer.readBytes((uint8_t *)&str1_, sizeof(str1));
-    myBuffer.readBytes((uint8_t *)&str2_, sizeof(str2));
-    if( (str1 == str2_) && (str2 == str1_)) 
+    if( Compare(str1, str1_, 5) && Compare(str2, str2_, 5)) 
         return OK;
     else
         return FAIL;
@@ -168,7 +160,7 @@ int test(){
 
     cout << "1 - Ok; 0 - FALIL" << endl;
 
-    //test addBytes and readBytes
+    //test writeBytes and readBytes
     cout << "test1: " << test1() << endl;
     cout << "test2: " << test2() << endl;
     cout << "test3: " << test3() << endl;
